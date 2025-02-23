@@ -1,0 +1,87 @@
+import numpy as np
+import pandas as pd
+import re
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import random
+
+# 🎲 1️⃣ Generate Synthetic Dataset
+np.random.seed(42)
+
+positive_tweets = [
+    "I love this new phone! It's amazing!", "Great weather today, feeling fantastic!", 
+    "Best movie I've seen in years!", "This place serves delicious food!", 
+    "I'm so happy with my new job!", "Had a wonderful day at the park!"
+]
+
+neutral_tweets = [
+    "I went to work today.", "It's a regular Monday.", 
+    "Just finished watching a random show.", "This book is okay.", 
+    "Not much happening today.", "I had lunch at a restaurant."
+]
+
+negative_tweets = [
+    "I hate this traffic!", "Worst customer service ever!", 
+    "Feeling really sick today.", "This movie was so boring.", 
+    "Not happy with my purchase.", "Terrible weather, so gloomy."
+]
+
+# Generate dataset with labels
+tweets = positive_tweets + neutral_tweets + negative_tweets
+labels = ["positive"] * len(positive_tweets) + ["neutral"] * len(neutral_tweets) + ["negative"] * len(negative_tweets)
+
+# Convert to DataFrame
+df = pd.DataFrame({"Tweet": tweets, "Sentiment": labels})
+
+# 📊 Show dataset sample
+print(df.head())
+
+# 🏗️ 2️⃣ Text Preprocessing Function
+def clean_text(text):
+    text = re.sub(r"http\S+|www\S+|https\S+", '', text, flags=re.MULTILINE)  # Remove URLs
+    text = re.sub(r'\@\w+|\#','', text)  # Remove mentions and hashtags
+    text = re.sub(r'\d+', '', text)  # Remove numbers
+    text = text.lower().strip()  # Convert to lowercase
+    return text
+
+df["Cleaned_Tweet"] = df["Tweet"].apply(clean_text)
+
+# 🔠 3️⃣ Convert Text into Numerical Representation (TF-IDF)
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(df["Cleaned_Tweet"])
+y = df["Sentiment"]
+
+# ✂️ 4️⃣ Train-Test Split (80-20)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 🔥 5️⃣ Train Model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# 📊 6️⃣ Predictions & Evaluation
+y_pred = model.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Model Accuracy: {accuracy:.2f}")
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# 🎨 7️⃣ Confusion Matrix Visualization
+plt.figure(figsize=(6, 4))
+sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d', cmap="Blues", xticklabels=model.classes_, yticklabels=model.classes_)
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Confusion Matrix")
+plt.show()
+
+# 🔍 8️⃣ Test Model with a New Sentence
+new_tweets = ["I just bought a new car and I love it!", "The service at this restaurant is horrible!", "I'm going to work today."]
+new_tweets_cleaned = [clean_text(tw) for tw in new_tweets]
+new_tweets_vectorized = vectorizer.transform(new_tweets_cleaned)
+
+predictions = model.predict(new_tweets_vectorized)
+for tweet, sentiment in zip(new_tweets, predictions):
+    print(f"Tweet: {tweet} → Predicted Sentiment: {sentiment}")
