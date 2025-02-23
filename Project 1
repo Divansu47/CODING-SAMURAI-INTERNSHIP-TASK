@@ -1,1 +1,77 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# 🎲 1️⃣ Generate Synthetic Dataset
+np.random.seed(42)
+num_samples = 1000
+
+# Features
+area = np.random.randint(800, 5000, num_samples)  # Area in sq ft
+weather = np.random.choice(["Sunny", "Rainy", "Snowy"], num_samples)  # Weather condition
+age_of_house = np.random.randint(1, 50, num_samples)  # Age of house in years
+num_bedrooms = np.random.randint(1, 6, num_samples)  # 1 to 5 bedrooms
+num_bathrooms = np.random.randint(1, 4, num_samples)  # 1 to 3 bathrooms
+school_rating = np.random.randint(1, 11, num_samples)  # 1 to 10 rating
+crime_rate = np.random.uniform(1, 50, num_samples)  # Crime rate per 1000 people
+
+# Generate House Price (Target) with some randomness
+price = (area * 300) + (num_bedrooms * 5000) + (num_bathrooms * 7000) \
+        - (age_of_house * 1000) + (school_rating * 2000) - (crime_rate * 300) \
+        + np.random.randint(-20000, 20000, num_samples)  # Adding noise
+
+# Create DataFrame
+df = pd.DataFrame({
+    "Area": area,
+    "Weather": weather,
+    "Age_of_House": age_of_house,
+    "Num_Bedrooms": num_bedrooms,
+    "Num_Bathrooms": num_bathrooms,
+    "School_Rating": school_rating,
+    "Crime_Rate": crime_rate,
+    "Price": price
+})
+
+# 📊 Show dataset sample
+print(df.head())
+
+# 🏗️ 2️⃣ Preprocessing: One-Hot Encode Weather Feature
+df = pd.get_dummies(df, columns=["Weather"], drop_first=True)  # Converts 'Weather' to numerical
+
+# 🎯 3️⃣ Define Features (X) & Target (y)
+X = df.drop(columns=["Price"])  # Features
+y = df["Price"]  # Target variable
+
+# 🔍 4️⃣ Normalize Numerical Features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# ✂️ 5️⃣ Train-Test Split (80-20)
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# 🔥 6️⃣ Train Linear Regression Model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# 📊 7️⃣ Predictions
+y_pred = model.predict(X_test)
+
+# 📉 8️⃣ Evaluate Model
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f"Mean Squared Error: {mse:.2f}")
+print(f"R² Score: {r2:.4f}")
+
+# 🎨 9️⃣ Visualizing Predictions
+plt.scatter(y_test, y_pred, alpha=0.7)
+plt.xlabel("Actual Prices")
+plt.ylabel("Predicted Prices")
+plt.title("Actual vs Predicted House Prices")
+plt.show()
 
