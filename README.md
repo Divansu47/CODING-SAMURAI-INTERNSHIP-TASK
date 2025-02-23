@@ -47,7 +47,7 @@ To run these projects, clone the repository and install the required dependencie
 bash
 Copy
 Edit
-git clone https://github.com/your-username/your-repo-name.git
+git clone https://github.com/Divansu47/CODING-SAMURAI-INTERNSHIP-TASK/tree/main
 cd your-repo-name
 pip install -r requirements.txt
 Each project contains a Jupyter Notebook or Python script with step-by-step explanations and implementation details.
