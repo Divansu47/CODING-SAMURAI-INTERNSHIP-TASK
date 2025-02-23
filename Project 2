@@ -7,7 +7,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-import random
 
 # 🎲 1️⃣ Generate Synthetic Dataset
 np.random.seed(42)
@@ -30,7 +29,7 @@ negative_tweets = [
     "Not happy with my purchase.", "Terrible weather, so gloomy."
 ]
 
-# Generate dataset with labels
+# Combine tweets with labels
 tweets = positive_tweets + neutral_tweets + negative_tweets
 labels = ["positive"] * len(positive_tweets) + ["neutral"] * len(neutral_tweets) + ["negative"] * len(negative_tweets)
 
@@ -66,8 +65,8 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
 accuracy = accuracy_score(y_test, y_pred)
-print(f"Model Accuracy: {accuracy:.2f}")
-print("\nClassification Report:\n", classification_report(y_test, y_pred))
+print(f"\n🎯 Model Accuracy: {accuracy:.2f}")
+print("\n📜 Classification Report:\n", classification_report(y_test, y_pred))
 
 # 🎨 7️⃣ Confusion Matrix Visualization
 plt.figure(figsize=(6, 4))
@@ -77,11 +76,19 @@ plt.ylabel("Actual")
 plt.title("Confusion Matrix")
 plt.show()
 
-# 🔍 8️⃣ Test Model with a New Sentence
-new_tweets = ["I just bought a new car and I love it!", "The service at this restaurant is horrible!", "I'm going to work today."]
-new_tweets_cleaned = [clean_text(tw) for tw in new_tweets]
-new_tweets_vectorized = vectorizer.transform(new_tweets_cleaned)
+# 🔍 8️⃣ Real-time User Input for Sentiment Prediction
+while True:
+    user_tweet = input("\n💬 Enter a tweet (or type 'exit' to stop): ")
+    if user_tweet.lower() == "exit":
+        print("🔚 Exiting...")
+        break  # Stop when user types 'exit'
 
-predictions = model.predict(new_tweets_vectorized)
-for tweet, sentiment in zip(new_tweets, predictions):
-    print(f"Tweet: {tweet} → Predicted Sentiment: {sentiment}")
+    # Preprocess the input tweet
+    cleaned_tweet = clean_text(user_tweet)
+    vectorized_tweet = vectorizer.transform([cleaned_tweet])  # Convert text to numerical format
+
+    # Predict sentiment
+    predicted_sentiment = model.predict(vectorized_tweet)[0]
+    
+    print(f"🔍 Predicted Sentiment: {predicted_sentiment}")
+
